@@ -21,7 +21,7 @@
     <description>个人记事本应用后端</description>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <jwt.version>0.11.5</jwt.version>
     </properties>
@@ -52,6 +52,11 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
