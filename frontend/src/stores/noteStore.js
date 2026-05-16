@@ -53,11 +53,31 @@ export const useNoteStore = defineStore('note', {
 
     async deleteNote(id) {
       const response = await noteApi.deleteNote(id)
+      this.notes = this.notes.map(note => 
+        note.id === id ? { ...note, isDeleted: true } : note
+      )
       return response
     },
 
     async archiveNote(id, isArchived) {
       const response = await noteApi.archiveNote(id, isArchived)
+      this.notes = this.notes.map(note => 
+        note.id === id ? { ...note, isArchived } : note
+      )
+      return response
+    },
+
+    async restoreNote(id) {
+      const response = await noteApi.restoreNote(id)
+      this.notes = this.notes.map(note => 
+        note.id === id ? { ...note, isDeleted: false } : note
+      )
+      return response
+    },
+
+    async deleteNotePermanently(id) {
+      const response = await noteApi.deleteNotePermanently(id)
+      this.notes = this.notes.filter(note => note.id !== id)
       return response
     }
   }

@@ -37,6 +37,26 @@ const routes = [
         path: 'notes/:id',
         name: 'NoteEditor',
         component: () => import('@/views/NoteEditor.vue')
+      },
+      {
+        path: 'categories',
+        name: 'CategoryList',
+        component: () => import('@/views/CategoryList.vue')
+      },
+      {
+        path: 'tags',
+        name: 'TagList',
+        component: () => import('@/views/TagList.vue')
+      },
+      {
+        path: 'archive',
+        name: 'ArchivedNotes',
+        component: () => import('@/views/ArchivedNotes.vue')
+      },
+      {
+        path: 'trash',
+        name: 'TrashNotes',
+        component: () => import('@/views/TrashNotes.vue')
       }
     ]
   }

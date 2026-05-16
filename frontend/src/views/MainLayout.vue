@@ -14,6 +14,26 @@
           <el-icon><Document /></el-icon>
           <span>全部笔记</span>
         </el-menu-item>
+
+        <el-menu-item index="/categories">
+          <el-icon><Folder /></el-icon>
+          <span>分类管理</span>
+        </el-menu-item>
+
+        <el-menu-item index="/tags">
+          <el-icon><Collection /></el-icon>
+          <span>标签管理</span>
+        </el-menu-item>
+
+        <el-menu-item index="/archive">
+          <el-icon><Box /></el-icon>
+          <span>归档笔记</span>
+        </el-menu-item>
+
+        <el-menu-item index="/trash">
+          <el-icon><Delete /></el-icon>
+          <span>回收站</span>
+        </el-menu-item>
       </el-menu>
 
       <div class="sidebar-footer">
