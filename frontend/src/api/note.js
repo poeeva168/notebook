@@ -24,14 +24,10 @@ export const archiveNote = (id, isArchived) => {
   return request.put(`/notes/${id}/archive`, { isArchived })
 }
 
-export const getTrashList = (params) => {
-  return request.get('/notes/trash', { params })
-}
-
 export const restoreNote = (id) => {
   return request.put(`/notes/${id}/restore`)
 }
 
-export const permanentDeleteNote = (id) => {
+export const deleteNotePermanently = (id) => {
   return request.delete(`/notes/${id}/permanent`)
 }
