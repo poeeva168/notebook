@@ -131,8 +131,8 @@ const handleRequest = (req, res) => {
 
 const server = http.createServer(handleRequest);
 
-server.listen(port, () => {
-  console.log(`Mock API Server running at http://localhost:${port}/`);
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Mock API Server running at http://0.0.0.0:${port}/`);
   console.log('Available endpoints:');
   console.log('  POST /api/auth/login');
   console.log('  POST /api/auth/register');
