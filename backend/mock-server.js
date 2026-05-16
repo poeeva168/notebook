@@ -42,7 +42,10 @@ const handleRequest = (req, res) => {
           res.end(JSON.stringify({
             code: 200,
             message: '登录成功',
-            data: { token: mockData.token, ...mockData.user }
+            data: {
+              token: mockData.token,
+              user: mockData.user
+            }
           }));
         } else {
           res.writeHead(401);
@@ -76,20 +79,20 @@ const handleRequest = (req, res) => {
       code: 200,
       data: mockData.user
     }));
-  } else if (pathname === '/api/note/list' && method === 'GET') {
+  } else if (pathname === '/api/notes' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
       code: 200,
       data: {
         list: [
-          { id: 1, title: '欢迎使用记事本', content: '# 欢迎\n\n这是一个演示笔记', summary: '欢迎使用记事本', created_at: '2026-05-16 10:00:00', updated_at: '2026-05-16 10:00:00' }
+          { id: 1, title: '欢迎使用记事本', content: '# 欢迎\n\n这是一个演示笔记', summary: '欢迎使用记事本', categoryId: 1, tags: [], createdAt: '2026-05-16 10:00:00', updatedAt: '2026-05-16 10:00:00' }
         ],
         total: 1,
         page: 1,
         pageSize: 10
       }
     }));
-  } else if (pathname.startsWith('/api/note') && method === 'POST') {
+  } else if (pathname === '/api/notes' && method === 'POST') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
@@ -106,15 +109,15 @@ const handleRequest = (req, res) => {
         res.end(JSON.stringify({ code: 400, message: '请求格式错误' }));
       }
     });
-  } else if (pathname === '/api/category/list' && method === 'GET') {
+  } else if (pathname === '/api/categories' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
       code: 200,
       data: [
-        { id: 1, name: '默认分类', sort_order: 0 }
+        { id: 1, name: '默认分类', sortOrder: 0 }
       ]
     }));
-  } else if (pathname === '/api/tag/list' && method === 'GET') {
+  } else if (pathname === '/api/tags' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
       code: 200,
@@ -137,8 +140,8 @@ server.listen(port, '0.0.0.0', () => {
   console.log('  POST /api/auth/login');
   console.log('  POST /api/auth/register');
   console.log('  GET  /api/auth/userinfo');
-  console.log('  GET  /api/note/list');
-  console.log('  POST /api/note/create');
-  console.log('  GET  /api/category/list');
-  console.log('  GET  /api/tag/list');
+  console.log('  GET  /api/notes');
+  console.log('  POST /api/notes');
+  console.log('  GET  /api/categories');
+  console.log('  GET  /api/tags');
 });
