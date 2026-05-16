@@ -29,6 +29,11 @@ const routes = [
         component: () => import('@/views/NoteList.vue')
       },
       {
+        path: 'notes/new',
+        name: 'NoteNew',
+        component: () => import('@/views/NoteEditor.vue')
+      },
+      {
         path: 'notes/:id',
         name: 'NoteEditor',
         component: () => import('@/views/NoteEditor.vue')

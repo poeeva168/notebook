@@ -10,7 +10,40 @@ const mockData = {
     username: 'demo',
     email: 'demo@example.com',
     avatar: null
-  }
+  },
+  notes: [
+    { 
+      id: 1, 
+      title: '欢迎使用记事本', 
+      content: '# 欢迎\n\n这是一个演示笔记，您可以在这里编辑 Markdown 内容。', 
+      summary: '欢迎使用记事本', 
+      categoryId: 1, 
+      tags: [], 
+      createdAt: '2026-05-16 10:00:00', 
+      updatedAt: '2026-05-16 10:00:00',
+      isArchived: false,
+      isDeleted: false
+    },
+    { 
+      id: 2, 
+      title: '我的第一个笔记', 
+      content: '# 学习笔记\n\n这是我的第一个学习笔记。', 
+      summary: '学习笔记摘要', 
+      categoryId: 1, 
+      tags: [{ id: 1, name: '重要', color: '#ff4d4f' }], 
+      createdAt: '2026-05-16 11:00:00', 
+      updatedAt: '2026-05-16 11:00:00',
+      isArchived: false,
+      isDeleted: false
+    }
+  ],
+  categories: [
+    { id: 1, name: '默认分类', sortOrder: 0 }
+  ],
+  tags: [
+    { id: 1, name: '重要', color: '#ff4d4f' },
+    { id: 2, name: '工作', color: '#1890ff' }
+  ]
 };
 
 const handleRequest = (req, res) => {
@@ -31,47 +64,47 @@ const handleRequest = (req, res) => {
 
   console.log(`${method} ${pathname}`);
 
-  if (pathname === '/api/auth/login' && method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
-        if (data.username && data.password) {
-          res.writeHead(200);
-          res.end(JSON.stringify({
-            code: 200,
-            message: '登录成功',
-            data: {
-              token: mockData.token,
-              user: mockData.user
-            }
-          }));
-        } else {
-          res.writeHead(401);
-          res.end(JSON.stringify({ code: 401, message: '用户名或密码错误' }));
+  // 获取请求体
+  const getBody = () => {
+    return new Promise((resolve, reject) => {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          resolve(body ? JSON.parse(body) : {});
+        } catch (e) {
+          reject(e);
         }
-      } catch (e) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ code: 400, message: '请求格式错误' }));
-      }
+      });
     });
-  } else if (pathname === '/api/auth/register' && method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
+  };
+
+  // 认证相关
+  if (pathname === '/api/auth/login' && method === 'POST') {
+    getBody().then(data => {
+      if (data.username && data.password) {
         res.writeHead(200);
         res.end(JSON.stringify({
           code: 200,
-          message: '注册成功',
-          data: { id: 1, username: data.username, email: data.email }
+          message: '登录成功',
+          data: {
+            token: mockData.token,
+            user: mockData.user
+          }
         }));
-      } catch (e) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ code: 400, message: '请求格式错误' }));
+      } else {
+        res.writeHead(401);
+        res.end(JSON.stringify({ code: 401, message: '用户名或密码错误' }));
       }
+    });
+  } else if (pathname === '/api/auth/register' && method === 'POST') {
+    getBody().then(data => {
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        code: 200,
+        message: '注册成功',
+        data: { id: 1, username: data.username, email: data.email }
+      }));
     });
   } else if (pathname === '/api/auth/userinfo' && method === 'GET') {
     res.writeHead(200);
@@ -79,54 +112,111 @@ const handleRequest = (req, res) => {
       code: 200,
       data: mockData.user
     }));
-  } else if (pathname === '/api/notes' && method === 'GET') {
+  } 
+  // 笔记相关
+  else if (pathname === '/api/notes' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
       code: 200,
       data: {
-        list: [
-          { id: 1, title: '欢迎使用记事本', content: '# 欢迎\n\n这是一个演示笔记', summary: '欢迎使用记事本', categoryId: 1, tags: [], createdAt: '2026-05-16 10:00:00', updatedAt: '2026-05-16 10:00:00' }
-        ],
-        total: 1,
+        records: mockData.notes,
+        total: mockData.notes.length,
         page: 1,
-        pageSize: 10
+        size: 20
       }
     }));
   } else if (pathname === '/api/notes' && method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
+    getBody().then(data => {
+      const newNote = {
+        id: Date.now(),
+        title: data.title,
+        content: data.content,
+        summary: data.content?.substring(0, 200),
+        categoryId: data.categoryId,
+        tags: data.tagIds?.map(id => mockData.tags.find(t => t.id === id)) || [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isArchived: false,
+        isDeleted: false
+      };
+      mockData.notes.unshift(newNote);
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        code: 200,
+        message: '创建成功',
+        data: newNote
+      }));
+    });
+  } else if (pathname.match(/^\/api\/notes\/\d+$/) && method === 'GET') {
+    const id = parseInt(pathname.split('/')[3]);
+    const note = mockData.notes.find(n => n.id === id);
+    if (note) {
+      res.writeHead(200);
+      res.end(JSON.stringify({ code: 200, data: note }));
+    } else {
+      res.writeHead(404);
+      res.end(JSON.stringify({ code: 404, message: '笔记不存在' }));
+    }
+  } else if (pathname.match(/^\/api\/notes\/\d+$/) && method === 'PUT') {
+    const id = parseInt(pathname.split('/')[3]);
+    getBody().then(data => {
+      const noteIndex = mockData.notes.findIndex(n => n.id === id);
+      if (noteIndex !== -1) {
+        mockData.notes[noteIndex] = {
+          ...mockData.notes[noteIndex],
+          ...data,
+          updatedAt: new Date().toISOString()
+        };
         res.writeHead(200);
-        res.end(JSON.stringify({
-          code: 200,
-          message: '操作成功',
-          data: { id: Date.now(), ...data }
-        }));
-      } catch (e) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ code: 400, message: '请求格式错误' }));
+        res.end(JSON.stringify({ code: 200, data: mockData.notes[noteIndex] }));
+      } else {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 404, message: '笔记不存在' }));
       }
     });
-  } else if (pathname === '/api/categories' && method === 'GET') {
+  } else if (pathname.match(/^\/api\/notes\/\d+$/) && method === 'DELETE') {
+    const id = parseInt(pathname.split('/')[3]);
+    const noteIndex = mockData.notes.findIndex(n => n.id === id);
+    if (noteIndex !== -1) {
+      mockData.notes.splice(noteIndex, 1);
+      res.writeHead(200);
+      res.end(JSON.stringify({ code: 200, message: '删除成功' }));
+    } else {
+      res.writeHead(404);
+      res.end(JSON.stringify({ code: 404, message: '笔记不存在' }));
+    }
+  } else if (pathname.match(/^\/api\/notes\/\d+\/archive$/) && method === 'PUT') {
+    const id = parseInt(pathname.split('/')[3]);
+    getBody().then(data => {
+      const noteIndex = mockData.notes.findIndex(n => n.id === id);
+      if (noteIndex !== -1) {
+        mockData.notes[noteIndex].isArchived = data.isArchived;
+        res.writeHead(200);
+        res.end(JSON.stringify({ code: 200, data: mockData.notes[noteIndex] }));
+      } else {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 404, message: '笔记不存在' }));
+      }
+    });
+  }
+  // 分类相关
+  else if (pathname === '/api/categories' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
       code: 200,
-      data: [
-        { id: 1, name: '默认分类', sortOrder: 0 }
-      ]
+      data: mockData.categories
     }));
-  } else if (pathname === '/api/tags' && method === 'GET') {
+  }
+  // 标签相关
+  else if (pathname === '/api/tags' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
       code: 200,
-      data: [
-        { id: 1, name: '重要', color: '#ff4d4f' },
-        { id: 2, name: '工作', color: '#1890ff' }
-      ]
+      data: mockData.tags
     }));
-  } else {
+  }
+  // 404
+  else {
     res.writeHead(404);
     res.end(JSON.stringify({ code: 404, message: '接口不存在' }));
   }
@@ -142,6 +232,10 @@ server.listen(port, '0.0.0.0', () => {
   console.log('  GET  /api/auth/userinfo');
   console.log('  GET  /api/notes');
   console.log('  POST /api/notes');
+  console.log('  GET  /api/notes/:id');
+  console.log('  PUT  /api/notes/:id');
+  console.log('  DELETE /api/notes/:id');
+  console.log('  PUT  /api/notes/:id/archive');
   console.log('  GET  /api/categories');
   console.log('  GET  /api/tags');
 });
